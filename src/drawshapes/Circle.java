@@ -43,4 +43,14 @@ public class Circle extends AbstractShape
         this.anchorPoint = p;
     }
 
+    @Override
+    public void scaleUp(double scale)
+    {
+        diameter *= scale;
+    }
+    @Override
+    public void scaleDown(double scale)
+    {
+        diameter *= scale;
+    }
 }

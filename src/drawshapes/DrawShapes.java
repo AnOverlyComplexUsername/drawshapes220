@@ -9,15 +9,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
-
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -38,7 +34,10 @@ public class DrawShapes extends JFrame
     private ShapeType shapeType = ShapeType.SQUARE;
     private Color color = Color.RED;
     private Point startDrag;
-
+    private int distance = 20;
+    private double scaleUpFactor = 1.5;
+    private double scaleDownFactor = 0.5;
+    
 
     public DrawShapes(int width, int height)
     {
@@ -69,12 +68,12 @@ public class DrawShapes extends JFrame
     
     private void initializeMouseListener()
     {
-        MouseAdapter a = new MouseAdapter() {
+        MouseAdapter a = new MouseAdapter() { //anon class; implements abstract class 
             
             public void mouseClicked(MouseEvent e)
             {
                 System.out.printf("Mouse cliked at (%d, %d)\n", e.getX(), e.getY());
-                
+                // handles placing shapes when left clicked
                 if (e.getButton()==MouseEvent.BUTTON1) { 
                     if (shapeType == ShapeType.SQUARE) {
                         scene.addShape(new Square(color, 
@@ -117,7 +116,7 @@ public class DrawShapes extends JFrame
             /* (non-Javadoc)
              * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
              */
-            public void mousePressed(MouseEvent e)
+            public void mousePressed(MouseEvent e) 
             {
                 System.out.printf("mouse pressed at (%d, %d)\n", e.getX(), e.getY());
                 scene.startDrag(e.getPoint());
@@ -243,6 +242,30 @@ public class DrawShapes extends JFrame
                 color = Color.BLUE;
             }
         });
+
+         // yellow color
+         JMenuItem yellowColorItem = new JMenuItem ("Yellow");
+         colorMenu.add(yellowColorItem);
+         yellowColorItem.addActionListener(new ActionListener() {
+             public void actionPerformed(ActionEvent e) {
+                 String text=e.getActionCommand();
+                 System.out.println(text);
+                 // change the color instance variable to blue
+                 color = Color.YELLOW;
+             }
+         });
+
+         // green color
+         JMenuItem greenColorItem = new JMenuItem ("Green");
+         colorMenu.add(greenColorItem);
+         greenColorItem.addActionListener(new ActionListener() {
+             public void actionPerformed(ActionEvent e) {
+                 String text=e.getActionCommand();
+                 System.out.println(text);
+                 // change the color instance variable to blue
+                 color = Color.GREEN;
+             }
+         });
         
         // shape menu
         JMenu shapeMenu = new JMenu("Shape");
@@ -270,6 +293,16 @@ public class DrawShapes extends JFrame
             }
         });
         
+        // rectangle
+        JMenuItem rectangleItem = new JMenuItem("Rectangle");
+        shapeMenu.add(rectangleItem);
+        rectangleItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("Rectangle");
+                shapeType = ShapeType.RECTANGLE;
+            }
+        });
         
         // operation mode menu
         JMenu operationModeMenu=new JMenu("Operation");
@@ -313,7 +346,20 @@ public class DrawShapes extends JFrame
                 // TODO: implement this method if you need it
             }
             public void keyTyped(KeyEvent e) {
+                char k = e.getKeyChar();
                 // TODO: implement this method if you need it
+        
+                if(k == 'w') scene.MoveSelected(distance);
+                if(k == 's') scene.MoveSelected(distance);
+                if(k == 'a') scene.MoveSelected(distance);
+                if(k == 'd') scene.MoveSelected(distance);
+
+                if(k == 'p') for (IShape shapes: scene) if (shapes.isSelected()) shapes.scaleUp(scaleUpFactor);
+                if(k == 'l') for (IShape shapes: scene) if (shapes.isSelected()) shapes.scaleDown(scaleDownFactor);
+
+                repaint();
+
+
             }
         });
     }

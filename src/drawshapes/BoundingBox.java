@@ -25,6 +25,7 @@ class BoundingBox
         return p.x >= left && p.x <= right && p.y >= top && p.y <= bottom;
     }
     
+    @Override
     public String toString() {
         return String.format("left=%d right=%d top=%d bottom=%d", this.left, this.right, this.top, this.bottom);
     }
@@ -50,5 +51,17 @@ class BoundingBox
         }
         return this.left > other.left && this.right < other.right &&
                 this.top < other.top && this.bottom > other.bottom;
+    }
+
+    public void move(int dx, int dy)
+    {
+        left += dx;
+        right += dx;
+        top += dy;
+        bottom += dy;
+        for (Point p: corners)
+        {
+            p.translate(dx, dy);
+        }
     }
 }

@@ -99,4 +99,23 @@ public abstract class AbstractShape implements IShape
         }
         throw new UnsupportedOperationException("Unexpected color: "+color);
     }
+
+    @Override
+    public void move(int x, int y)
+    {
+        anchorPoint.translate(x, y);
+        boundingBox.move(x, y);
+
+    }
+
+    public void scaleDown()
+    {
+        throw new UnsupportedOperationException("not yet implemnted"); 
+    }
+
+    public void scaleUp()
+    {
+        throw new UnsupportedOperationException("not yet implemnted");
+
+    }
 }
