@@ -281,6 +281,7 @@ public class DrawShapes extends JFrame
         fileMenu.add(loadItem);
         loadItem.addActionListener(new ActionListener() {
             @Override
+            @SuppressWarnings("UseSpecificCatch")
             public void actionPerformed(ActionEvent e) {
                 System.out.println(e.getActionCommand());
                 JFileChooser jfc = new JFileChooser(".");
@@ -296,8 +297,15 @@ public class DrawShapes extends JFrame
                         scene.loadFromFile(selectedFile);
                         cacheScene();
                         repaint();
+                    } catch (IOException ex) //lazy exception
+                    {
+                        JOptionPane.showMessageDialog(null, "ERROR: File Not Found");
+                    } catch (InputMismatchException ex)
+                    {
+                        JOptionPane.showMessageDialog(null, "ERROR: File Corrupted");
+
                     }
-                    catch (IOException ex)
+                    catch (Exception ex)
                     {
                         JOptionPane.showMessageDialog(null, ex);
                     }
@@ -324,17 +332,9 @@ public class DrawShapes extends JFrame
                     try (PrintWriter out  = new PrintWriter(selectedFile))
                     {
                         out.write(scene.toString());
-                    } catch (IOException ex) //lazy exception
-                    {
-                        JOptionPane.showMessageDialog(null, "ERROR: File Not Found");
-                    } catch (InputMismatchException ex)
-                    {
-                        JOptionPane.showMessageDialog(null, "ERROR: File Corrupted");
-
-                    } catch (Exception ex)
+                    }  catch (Exception ex)
                     {
                         JOptionPane.showMessageDialog(null, "ERROR: " + ex);
-
                     }
 
                    
