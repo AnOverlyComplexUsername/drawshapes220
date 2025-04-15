@@ -75,4 +75,10 @@ public class Rectangle extends AbstractShape
         height *= scale;
     }
 
+    @Override
+    public IShape copy()
+    {
+        return new Rectangle( new Point(anchorPoint), width, height, color);
+    }
+
 }

@@ -2,12 +2,17 @@ package drawshapes;
 
 
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * A scene of shapes.  Uses the Model-View-Controller (MVC) design pattern,
@@ -25,6 +30,7 @@ import java.util.List;
 public class Scene implements Iterable<IShape>
 {
     private List<IShape> shapeList=new LinkedList<IShape>();
+    
     private SelectionRectangle selectRect;
     private boolean isDrag;
     private Point startDrag;
@@ -33,6 +39,7 @@ public class Scene implements Iterable<IShape>
         for (IShape s : this){
             s.setSelected(false);
         }
+
         if (drag.x > startDrag.x){
             if (drag.y > startDrag.y){
                 // top-left to bottom-right
@@ -146,12 +153,75 @@ public class Scene implements Iterable<IShape>
         return shapeText;
     }
 
-    public void MoveSelected(int d)
+    public void MoveSelected(int x, int y)
     {
         for (IShape shapes : shapeList)
             {
-                if(shapes.isSelected()) shapes.move(0,-d);
+                if(shapes.isSelected()) shapes.move(x,-y);
             }
     }
+
+    public void loadFromFile(File selectedFile) throws FileNotFoundException {
+        // TODO Auto-generated method stub
+        shapeList.clear();
+        Scanner scan = new Scanner(new FileInputStream(selectedFile));
+        while(scan.hasNext())
+        {
+            String shapeType = scan.next().toUpperCase();
+
+            switch (shapeType){
+                case "SQUARE" -> {
+                    int x = scan.nextInt();
+                    int y = scan.nextInt();
+                    int side = scan.nextInt();
+                    String colorStr = scan.next();
+                    boolean selected = scan.nextBoolean();
+                    Color color = Util.stringToColor(colorStr);
+                    Square sq = new Square(color, x, y, side);
+                    sq.setSelected(selected);
+                    addShape(sq);
+                }
+                case "RECTANGLE" -> {
+                    int x = scan.nextInt();
+                    int y = scan.nextInt();
+                    int side = scan.nextInt();
+                    int height = scan.nextInt();
+                    String colorStr = scan.next();
+                    boolean selected = scan.nextBoolean();
+                    Color color = Util.stringToColor(colorStr);
+                    Rectangle rt = new Rectangle(new Point(x,y), side, height, color);
+                    rt.setSelected(selected);
+                    addShape(rt);
+                }
+                case "CIRCLE" -> {
+                    int x = scan.nextInt();
+                    int y = scan.nextInt();
+                    int diameter = scan.nextInt();
+                    String colorStr = scan.next();
+                    boolean selected = scan.nextBoolean();
+                    Color color = Util.stringToColor(colorStr);
+                    Circle cr = new Circle(color, new Point(x,y), diameter);
+                    cr.setSelected(selected);
+                    addShape(cr);
+                }
+            }
+        }
+        scan.close();   
+    }
+
+
+    public Scene copy()
+    {
+        Scene copyScene = new Scene();
+        for (IShape s : shapeList) {
+            copyScene.addShape(s.copy());
+        }
+
+        return copyScene;
+    }
     
+    public void update(Scene other)
+    {
+        this.shapeList = other.shapeList;
+    }
 }

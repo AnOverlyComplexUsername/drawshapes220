@@ -13,12 +13,18 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.InputMismatchException;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 
 @SuppressWarnings("serial")
 public class DrawShapes extends JFrame
@@ -37,12 +43,16 @@ public class DrawShapes extends JFrame
     private int distance = 20;
     private double scaleUpFactor = 1.5;
     private double scaleDownFactor = 0.5;
-    
+    private LinkedList<Scene> undoStack = new LinkedList<>();
+    private int undoStackIndex =  0; // current scene in the undo stack; allows for undo/redo
+    private Scene cachedCurScene; // used for redoing an undo
 
     public DrawShapes(int width, int height)
     {
         setTitle("Draw Shapes!");
         scene=new Scene();
+        undoStack.push(scene);
+
         
         // create our canvas, add to this frame's content pane
         shapePanel = new DrawShapesPanel(width,height,scene);
@@ -65,9 +75,70 @@ public class DrawShapes extends JFrame
             }
         });
     }
-    
+
+
+    // undo/redo functions
+    private void push()
+    {
+        if(undoStackIndex != 0)
+        {
+            for(int i = undoStackIndex; i > 0 ; i-- )
+            {
+                undoStack.removeFirst();
+                undoStackIndex--;
+            }
+        }
+            undoStack.push(scene.copy());
+    }
+
+    /// caches the current scene as a reference for redo-ing an action
+    private void cacheScene()
+    {
+        cachedCurScene = scene.copy();
+    }
+
+    private void undo()
+    {
+        if(undoStackIndex < undoStack.size() -1 ){
+            scene.update(undoStack.get(undoStackIndex));
+            undoStackIndex++;
+        }
+        repaint();
+    }
+
+    private void redo()
+    {
+        if(undoStackIndex > 0){
+            undoStackIndex--;
+            if (undoStackIndex == 0)
+                scene.update(cachedCurScene);
+             else 
+                scene.update(undoStack.get(undoStackIndex-1));
+        }
+        repaint();
+    }
+
     private void initializeMouseListener()
     {
+        //right click menu
+        JPopupMenu rClickMenu = new JPopupMenu();
+        JMenuItem undoItem = new JMenuItem("Undo");
+        undoItem.addActionListener((ActionEvent e) -> {
+            System.out.println(e.getActionCommand());
+            undo();
+        });
+
+        JMenuItem redoItem = new JMenuItem("Redo");
+        redoItem.addActionListener((ActionEvent e) -> {
+            System.out.println(e.getActionCommand());
+            redo();
+        });
+        rClickMenu.add(undoItem);
+        rClickMenu.add(redoItem);
+        
+
+
+
         MouseAdapter a = new MouseAdapter() { //anon class; implements abstract class 
             
             public void mouseClicked(MouseEvent e)
@@ -76,20 +147,26 @@ public class DrawShapes extends JFrame
                 // handles placing shapes when left clicked
                 if (e.getButton()==MouseEvent.BUTTON1) { 
                     if (shapeType == ShapeType.SQUARE) {
+                        push();
                         scene.addShape(new Square(color, 
                                 e.getX(), 
                                 e.getY(),
                                 100));
+                        cacheScene();
                     } else if (shapeType == ShapeType.CIRCLE){
+                        push();
                         scene.addShape(new Circle(color,
                                 e.getPoint(),
                                 100));
+                        cacheScene();
                     } else if (shapeType == ShapeType.RECTANGLE) {
+                        push();
                         scene.addShape(new Rectangle(
                                 e.getPoint(),
                                 100, 
                                 200,
                                 color));
+                        cacheScene();
                     }
                     
                 } else if (e.getButton()==MouseEvent.BUTTON2) {
@@ -98,6 +175,11 @@ public class DrawShapes extends JFrame
                     // right right-click
                     Point p = e.getPoint();
                     System.out.printf("Right click is (%d, %d)\n", p.x, p.y);
+                    rClickMenu.show(rootPane, p.x, p.y + 20);
+
+
+
+
                     List<IShape> selected = scene.select(p);
                     if (selected.size() > 0){
                         for (IShape s : selected){
@@ -155,6 +237,7 @@ public class DrawShapes extends JFrame
      */
     private void initializeMenu()
     {
+
         // menu bar
         JMenuBar menuBar = new JMenuBar();
         
@@ -167,7 +250,6 @@ public class DrawShapes extends JFrame
         loadItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
                 System.out.println(e.getActionCommand());
                 JFileChooser jfc = new JFileChooser(".");
 
@@ -176,7 +258,17 @@ public class DrawShapes extends JFrame
                 if (returnValue == JFileChooser.APPROVE_OPTION) {
                     File selectedFile = jfc.getSelectedFile();
                     System.out.println("load from " +selectedFile.getAbsolutePath());
-                    //TODO: load scene from file
+                    try
+                    {
+                        push();
+                        scene.loadFromFile(selectedFile);
+                        cacheScene();
+                        repaint();
+                    }
+                    catch (IOException ex)
+                    {
+                        JOptionPane.showMessageDialog(null, ex);
+                    }
                     
                 }
             }
@@ -187,7 +279,6 @@ public class DrawShapes extends JFrame
         saveItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
                 System.out.println(e.getActionCommand());
                 JFileChooser jfc = new JFileChooser(".");
 
@@ -197,7 +288,24 @@ public class DrawShapes extends JFrame
                 if (returnValue == JFileChooser.APPROVE_OPTION) {
                     File selectedFile = jfc.getSelectedFile();
                     System.out.println("save to " +selectedFile.getAbsolutePath());
-                    //TODO: save scene to file
+
+                    try (PrintWriter out  = new PrintWriter(selectedFile))
+                    {
+                        out.write(scene.toString());
+                    } catch (IOException ex) //lazy exception
+                    {
+                        JOptionPane.showMessageDialog(null, "ERROR: File Not Found");
+                    } catch (InputMismatchException ex)
+                    {
+                        JOptionPane.showMessageDialog(null, "ERROR: File Corrupted");
+
+                    } catch (Exception ex)
+                    {
+                        JOptionPane.showMessageDialog(null, "ERROR: " + ex);
+
+                    }
+
+                   
                     
                 }
             }
@@ -349,17 +457,51 @@ public class DrawShapes extends JFrame
                 char k = e.getKeyChar();
                 // TODO: implement this method if you need it
         
-                if(k == 'w') scene.MoveSelected(distance);
-                if(k == 's') scene.MoveSelected(distance);
-                if(k == 'a') scene.MoveSelected(distance);
-                if(k == 'd') scene.MoveSelected(distance);
+                if(k == 'w') {
+                    push(); 
+                    scene.MoveSelected(0,distance); 
+                    cacheScene();
+                }
+                if(k == 's') 
+                {
+                    push();
+                    scene.MoveSelected(0, -distance);
+                    cacheScene();
+                }
+                if(k == 'a') {
+                    push();
+                    scene.MoveSelected(-distance, 0); 
+                    cacheScene();
+                }
+                if(k == 'd') {
+                    push();
+                    scene.MoveSelected(distance, 0);
+                    cacheScene();
+                }
 
-                if(k == 'p') for (IShape shapes: scene) if (shapes.isSelected()) shapes.scaleUp(scaleUpFactor);
-                if(k == 'l') for (IShape shapes: scene) if (shapes.isSelected()) shapes.scaleDown(scaleDownFactor);
+                if(k == 'p') {
+                    push();
+                    for (IShape shapes: scene) if (shapes.isSelected()) 
+                    {
+                        shapes.scaleUp(scaleUpFactor);
+                    }
+                    cacheScene();
+                }
+                if(k == 'l') {
+                    push();
+                    for (IShape shapes: scene) if (shapes.isSelected()) 
+                    {
+                        shapes.scaleDown(scaleDownFactor);
+                    }
+                    cacheScene();
+                }
+                
+                if(k == 'z') //undo
+                    undo();
 
+                if(k == 'y') //redo
+                    redo();
                 repaint();
-
-
             }
         });
     }

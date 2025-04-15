@@ -53,4 +53,10 @@ public class Circle extends AbstractShape
     {
         diameter *= scale;
     }
+
+    @Override
+    public IShape copy()
+    {
+        return new Circle(color, new Point(anchorPoint), diameter);
+    }
 }

@@ -62,6 +62,8 @@ class BoundingBox
         for (Point p: corners)
         {
             p.translate(dx, dy);
+    
         }
+        
     }
 }
