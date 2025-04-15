@@ -8,6 +8,7 @@ import java.awt.Point;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -91,6 +92,7 @@ public class Scene implements Iterable<IShape>
      * Get an iterator that can iterate through all the shapes
      * in the scene.
      */
+    @Override
     public Iterator<IShape> iterator() {
         return shapeList.iterator();
     }
@@ -103,7 +105,7 @@ public class Scene implements Iterable<IShape>
     public List<IShape> select(Point point)
     {
         List<IShape> selected = new LinkedList<IShape>();
-        for (IShape s : shapeList){
+        for (var s : shapeList){
             if (s.contains(point)){
                 selected.add(s);
             }
@@ -156,9 +158,34 @@ public class Scene implements Iterable<IShape>
     public void MoveSelected(int x, int y)
     {
         for (IShape shapes : shapeList)
-            {
-                if(shapes.isSelected()) shapes.move(x,-y);
+            if(shapes.isSelected()) shapes.move(x,-y);
+        
+    }
+
+    /// recolors selected shapes to currently selected color in menu
+    public void recolorSelectedShapes(Color color)
+    {
+        for (IShape s : shapeList)
+            if(s.isSelected()) s.setColor(color);
+        
+    }
+
+    /// deselects all currently selected shapes
+    public void deselectAll()
+    {
+        for (IShape s : shapeList)
+            if(s.isSelected()) s.setSelected(false);
+    }    
+
+    /// deletes all selected shapes
+    public void deleteAllSelected()
+    {
+        for (int i = 0; i < shapeList.size(); i++) {
+            if(shapeList.get(i).isSelected()) {
+                shapeList.remove(shapeList.get(i)); 
+                i--;
             }
+        }
     }
 
     public void loadFromFile(File selectedFile) throws FileNotFoundException {

@@ -78,6 +78,7 @@ public class DrawShapes extends JFrame
 
 
     // undo/redo functions
+    /// stores scene for redo/undo operation
     private void push()
     {
         if(undoStackIndex != 0)
@@ -136,6 +137,38 @@ public class DrawShapes extends JFrame
         rClickMenu.add(undoItem);
         rClickMenu.add(redoItem);
         
+        JMenuItem recolorItem=new JMenuItem("Recolor");
+        rClickMenu.add(recolorItem);
+        recolorItem.addActionListener((ActionEvent e) -> {
+            push();
+            String text=e.getActionCommand();
+            System.out.println(text);
+            scene.recolorSelectedShapes(color);
+            repaint();
+            cacheScene();
+        });
+
+        JMenuItem deselectItem = new JMenuItem("Deselect");
+        rClickMenu.add(deselectItem);
+        deselectItem.addActionListener((ActionEvent e) -> {
+            String text=e.getActionCommand();
+            System.out.println(text);
+            scene.deselectAll();
+            repaint();
+        });
+
+        JMenuItem deleteItem = new JMenuItem("Delete");
+        rClickMenu.add(deleteItem);
+        deleteItem.addActionListener((ActionEvent e) -> {
+            String text=e.getActionCommand();
+            push();
+            System.out.println(text);
+            scene.deleteAllSelected();
+            repaint();
+            cacheScene();
+        });
+
+
 
 
 
@@ -171,13 +204,13 @@ public class DrawShapes extends JFrame
                     
                 } else if (e.getButton()==MouseEvent.BUTTON2) {
                     // apparently this is middle click
+                    Point p = e.getPoint();
+                    rClickMenu.show(rootPane, p.x, p.y + 20);
                 } else if (e.getButton()==MouseEvent.BUTTON3){
                     // right right-click
                     Point p = e.getPoint();
                     System.out.printf("Right click is (%d, %d)\n", p.x, p.y);
                     rClickMenu.show(rootPane, p.x, p.y + 20);
-
-
 
 
                     List<IShape> selected = scene.select(p);
@@ -436,6 +469,31 @@ public class DrawShapes extends JFrame
             }
         });
         
+        // recolor option
+        JMenuItem recolorItem=new JMenuItem("Recolor");
+        operationModeMenu.add(recolorItem);
+        recolorItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String text=e.getActionCommand();
+                System.out.println(text);
+                push();
+                scene.recolorSelectedShapes(color);
+                repaint();
+                cacheScene();
+            }
+        });
+
+        // delete option
+        JMenuItem deleteItem = new JMenuItem("Delete");
+        operationModeMenu.add(deleteItem);
+        deleteItem.addActionListener((ActionEvent e) -> {
+            String text=e.getActionCommand();
+            push();
+            System.out.println(text);
+            scene.deleteAllSelected();
+            repaint();
+            cacheScene();
+        });
 
         // set the menu bar for this frame
         this.setJMenuBar(menuBar);
