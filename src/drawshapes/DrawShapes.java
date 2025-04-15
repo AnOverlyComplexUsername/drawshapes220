@@ -83,8 +83,7 @@ public class DrawShapes extends JFrame
     {
         if(undoStackIndex != 0)
         {
-            for(int i = undoStackIndex; i > 0 ; i-- )
-            {
+            while(undoStackIndex > 0){
                 undoStack.removeFirst();
                 undoStackIndex--;
             }
