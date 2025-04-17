@@ -218,7 +218,7 @@ public class DrawShapes extends JFrame
                     // right right-click
                     Point p = e.getPoint();
                     System.out.printf("Right click is (%d, %d)\n", p.x, p.y);
-                    rClickMenu.show(rootPane, p.x, p.y + 20);
+                    rClickMenu.show(rootPane, p.x, p.y + 20); //arbitrary number so menu isn't in the middle of mouse pointer
 
 
                     List<IShape> selected = scene.select(p);
@@ -503,7 +503,7 @@ public class DrawShapes extends JFrame
             cacheScene();
         });
 
-
+        // help menu; provides user w/ list of keybinds 
         JMenuItem helpItem = new JMenuItem("Help");
         menuBar.add(helpItem);
         helpItem.addActionListener((ActionEvent e) -> {
@@ -517,7 +517,7 @@ public class DrawShapes extends JFrame
             str.append("l -> Scale down selected shapes").append(System.lineSeparator());
             str.append("z -> Undo").append(System.lineSeparator());
             str.append("y -> Redo").append(System.lineSeparator());
-            str.append("right/middle click -> opens operations menu").append(System.lineSeparator());
+            str.append("right/middle click -> Opens operations menu").append(System.lineSeparator());
 
             JOptionPane.showMessageDialog(rootPane, str);
             
