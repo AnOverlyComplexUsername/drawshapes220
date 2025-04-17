@@ -170,11 +170,16 @@ public class Scene implements Iterable<IShape>
         
     }
 
+    /// selects all shapes
+    public void selectAll()
+    {
+        shapeList.forEach((s) -> {s.setSelected(true);});
+    }
+
     /// deselects all currently selected shapes
     public void deselectAll()
     {
-        for (IShape s : shapeList)
-            if(s.isSelected()) s.setSelected(false);
+         shapeList.forEach((s) -> {s.setSelected(false);});
     }    
 
     /// deletes all selected shapes

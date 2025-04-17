@@ -147,7 +147,16 @@ public class DrawShapes extends JFrame
             cacheScene();
         });
 
-        JMenuItem deselectItem = new JMenuItem("Deselect");
+        JMenuItem selectItem = new JMenuItem("Select All ");
+        rClickMenu.add(selectItem);
+        selectItem.addActionListener((ActionEvent e) -> {
+            String text=e.getActionCommand();
+            System.out.println(text);
+            scene.selectAll();
+            repaint();
+        });
+
+        JMenuItem deselectItem = new JMenuItem("Deselect All");
         rClickMenu.add(deselectItem);
         deselectItem.addActionListener((ActionEvent e) -> {
             String text=e.getActionCommand();
