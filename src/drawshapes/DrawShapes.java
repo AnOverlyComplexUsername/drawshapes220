@@ -494,6 +494,26 @@ public class DrawShapes extends JFrame
             cacheScene();
         });
 
+
+        JMenuItem helpItem = new JMenuItem("Help");
+        menuBar.add(helpItem);
+        helpItem.addActionListener((ActionEvent e) -> {
+            String text=e.getActionCommand();
+            System.out.println(text);
+
+            StringBuilder str = new StringBuilder();
+            str.append("Keybinds: ").append(System.lineSeparator());
+            str.append("WASD -> Move selected shapes").append(System.lineSeparator());
+            str.append("p -> Scale up selected shapes").append(System.lineSeparator());
+            str.append("l -> Scale down selected shapes").append(System.lineSeparator());
+            str.append("z -> Undo").append(System.lineSeparator());
+            str.append("y -> Redo").append(System.lineSeparator());
+            str.append("right/middle click -> opens operations menu").append(System.lineSeparator());
+
+            JOptionPane.showMessageDialog(rootPane, str);
+            
+        });
+
         // set the menu bar for this frame
         this.setJMenuBar(menuBar);
     }
