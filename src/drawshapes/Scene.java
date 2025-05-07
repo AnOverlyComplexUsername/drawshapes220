@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
+import jdk.jshell.ImportSnippet;
 
 /**
  * A scene of shapes.  Uses the Model-View-Controller (MVC) design pattern,
@@ -169,7 +170,6 @@ public class Scene implements Iterable<IShape>
             if(s.isSelected()) s.setColor(color);
         
     }
-
     /// selects all shapes
     public void selectAll()
     {
